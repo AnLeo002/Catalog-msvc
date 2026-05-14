@@ -9,7 +9,7 @@ import org.modelmapper.TypeMap;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -20,7 +20,7 @@ public class ModelMapperConfig {
 
         Converter<ProductEntity, ProductDTOResponse> productToDTOConvert = context -> {
             ProductEntity source = context.getSource();
-            List<ProductStockDTOResponse> productStockDTOResponseList = null;
+            Set<ProductStockDTOResponse> productStockDTOResponseList = null;
             if (source.getProductStockEntities() != null){
                 productStockDTOResponseList = source.getProductStockEntities().stream()
                         .map(productStockEntity -> new ProductStockDTOResponse(
@@ -29,7 +29,7 @@ public class ModelMapperConfig {
                                 productStockEntity.getSize().getId(),
                                 productStockEntity.getStock()
                         ))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
             }
             return new ProductDTOResponse(
                     source.getId(),
