@@ -4,14 +4,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Set;
 
-public record ProductDTOResponse(@NotBlank Long id,
+public record ProductDTOResponse(@NotNull Long id,
                                  @NotBlank String name,
                                  @NotBlank String color,
                                  @NotNull BigDecimal price,
                                  @NotBlank String description,
                                  @NotBlank String brand,
-                                 @NotBlank List<ProductStockDTOResponse> productStock
+                                 Set<ProductStockDTOResponse> productStock
                                  ) {
 }
