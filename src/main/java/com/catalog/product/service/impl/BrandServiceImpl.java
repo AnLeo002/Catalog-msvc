@@ -38,16 +38,16 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public BrandDTOResponse findBrandById(Long id) {
-        BrandEntity brand = repo.findById(id)
+        return repo.findById(id)
+                .map(brand -> new BrandDTOResponse(brand.getId(),brand.getBrand()))
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"La marca no se encuentra en la base de datos"));
-        return new BrandDTOResponse(brand.getId(),brand.getBrand());
     }
 
     @Override
     public BrandDTOResponse findBrandByName(String name) {
-        BrandEntity brand = repo.findByBrandIgnoreCase(name)
+        return repo.findByBrandIgnoreCase(name)
+                .map(brand -> new BrandDTOResponse(brand.getId(),brand.getBrand()))
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"La marca no se encuentra en la base de datos"));
-        return new BrandDTOResponse(brand.getId(),brand.getBrand());
     }
 
     @Override
