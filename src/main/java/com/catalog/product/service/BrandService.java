@@ -10,6 +10,6 @@ public interface BrandService {
     BrandDTOResponse findBrandById(Long id);
     BrandDTOResponse findBrandByName(String name);
     List<BrandDTOResponse> findAll();
-    BrandDTOResponse updateBrand(BrandDTO brandDTO);
+    BrandDTOResponse updateBrand(BrandDTO brandDTO, Long id);
     void deleteBrandById(Long id);
 }
