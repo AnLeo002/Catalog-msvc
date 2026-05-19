@@ -12,6 +12,7 @@ import com.catalog.product.repo.ProductRepo;
 import com.catalog.product.repo.ProductStockRepo;
 import com.catalog.product.repo.SizeRepo;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,7 +112,7 @@ public class ProductServiceImpl implements ProductService {
         if (productDTO.name() != null && !product.getName().equalsIgnoreCase(productDTO.name())) product.setName(productDTO.name());
         if (productDTO.color() != null && !product.getColor().equalsIgnoreCase(productDTO.color())) product.setColor(productDTO.color());
         if (productDTO.description() != null && !product.getDescription().equalsIgnoreCase(productDTO.description())) product.setDescription(productDTO.description());
-        if (productDTO.price() != null && !product.getPrice().equals(productDTO.price())) product.setPrice(productDTO.price());
+        if (product.getPrice().compareTo(productDTO.price()) != 0) product.setPrice(productDTO.price());
 
         // No hace falta repo.save(product) si usas @Transactional,
         return modelMapper.map(product, ProductDTOResponse.class);
@@ -162,14 +163,15 @@ public class ProductServiceImpl implements ProductService {
                 .map(entity -> new ProductStockSetDTOResponse(Collections.singleton(new ProductStockDTOResponse(entity.getId(), entity.getProduct().getId(), entity.getSize().getId(), entity.getStock()))))
                 .collect(Collectors.toSet());
     }
-
-    @Override
-    public ProductStockSetDTOResponse createAllStock(ProductStockSetDTO productStockSetDTO, Long id) {
-        return null;
-    }
-
     @Override
     public void deleteProductById(Long id) {
-
+        if (!repo.existsById(id)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"El producto no se encuentra en la base de datos para ser eliminado");
+        }
+        try{
+            repo.deleteById(id);
+        }catch (DataIntegrityViolationException e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"No se puede eliminar el producto porque tiene registros relacionados");
+        }
     }
 }
