@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductStockRepo extends JpaRepository<ProductStockEntity, ProductSizeId> {
-    //Esta query se encarga de primero suma el stock pero antes de guardar el resultado tiene que
-    // encontrar la llave (productId) y que la suma cumpla con el <=, sin esto el resultado no se
-    // guarda, esto detiene el envio de peticiones a la bd, haciendo que las peticiones al tiempo
+    //Esta query se encarga de primero suma el stock, pero antes de guardar el resultado tiene que
+    // encontrar la llave (productId, sizeId) y que la suma cumpla con el <=, sin esto el resultado no se
+    // guarda, esto detiene el envío de peticiones a la bd, haciendo que las peticiones al tiempo
     // entre administradores no generen un riesgo en la integridad de los datos
     @Modifying
     @Query("UPDATE ProductStockEntity s SET s.stock = s.stock + :amount " +
