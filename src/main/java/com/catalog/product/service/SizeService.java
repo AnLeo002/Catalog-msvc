@@ -10,6 +10,6 @@ public interface SizeService {
     SizeDTOResponse findSizeById(Long id);
     SizeDTOResponse findSizeBySize(String size);
     List<SizeDTOResponse> findAll();
-    SizeDTOResponse updateSize(SizeDTO sizeDTO);
+    SizeDTOResponse updateSize(SizeDTO sizeDTO, Long id);
     void deleteSizeById (Long id);
 }
