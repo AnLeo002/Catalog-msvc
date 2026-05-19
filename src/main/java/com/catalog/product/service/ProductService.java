@@ -14,8 +14,7 @@ public interface ProductService {
     ProductDTOResponse findProductByName(String name);
     List<ProductDTOResponse> findAll();
     ProductDTOResponse updateProductNoStock(ProductDTO productDTO,Long id);
-    Set<ProductStockSetDTOResponse> updateAllStock(ProductStockSetDTO productStockSetDTO, Long id);
-    ProductStockSetDTOResponse createAllStock(ProductStockSetDTO productStockSetDTO, Long id);
+    Set<ProductStockSetDTOResponse> updateAllStock(ProductStockSetDTO productStockSetDTO,Long id);
     void deleteProductById(Long id);
 
 
