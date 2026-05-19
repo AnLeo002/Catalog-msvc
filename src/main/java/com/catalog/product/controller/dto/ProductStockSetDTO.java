@@ -1,6 +1,6 @@
 package com.catalog.product.controller.dto;
 
-import java.util.List;
+import java.util.Set;
 
-public record ProductStockSetDTO(List<ProductStockDTO> productStockDTOS){
+public record ProductStockSetDTO(Set<ProductStockDTO> productStockDTOS){
 }
