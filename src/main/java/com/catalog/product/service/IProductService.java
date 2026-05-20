@@ -8,7 +8,7 @@ import com.catalog.product.controller.dto.ProductStockSetDTOResponse;
 import java.util.List;
 import java.util.Set;
 
-public interface ProductService {
+public interface IProductService {
     ProductDTOResponse createProduct(ProductDTO productDTO);
     ProductDTOResponse findProductById(Long id);
     ProductDTOResponse findProductByName(String name);

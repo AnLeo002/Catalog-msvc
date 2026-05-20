@@ -5,7 +5,7 @@ import com.catalog.product.controller.dto.SizeDTOResponse;
 
 import java.util.List;
 
-public interface SizeService {
+public interface ISizeService {
     SizeDTOResponse createSize (SizeDTO sizeDTO);
     SizeDTOResponse findSizeById(Long id);
     SizeDTOResponse findSizeBySize(String size);

@@ -7,7 +7,7 @@ import com.catalog.product.persistence.ProductStockEntity;
 
 import java.util.Set;
 
-public interface ProductStockService {
+public interface IProductStockService {
     ProductStockDTOResponse findById (ProductSizeIdDTO productSizeIdDTO);
     Set<ProductStockDTOResponse> findAll ();
     Set<ProductStockEntity> createStockWithProduct (Set<ProductStockDTO> productStockDTO);

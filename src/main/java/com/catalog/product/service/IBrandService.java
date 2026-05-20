@@ -5,7 +5,7 @@ import com.catalog.product.controller.dto.BrandDTOResponse;
 
 import java.util.List;
 
-public interface BrandService {
+public interface IBrandService {
     BrandDTOResponse createBrand(BrandDTO brandDTO);
     BrandDTOResponse findBrandById(Long id);
     BrandDTOResponse findBrandByName(String name);
