@@ -4,7 +4,7 @@ import com.catalog.product.controller.dto.BrandDTO;
 import com.catalog.product.controller.dto.BrandDTOResponse;
 import com.catalog.product.persistence.BrandEntity;
 import com.catalog.product.repo.BrandRepo;
-import com.catalog.product.service.BrandService;
+import com.catalog.product.service.IBrandService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,11 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
-public class BrandServiceImpl implements BrandService {
+public class BrandServiceImpl implements IBrandService {
     private final BrandRepo repo;
 
     public BrandServiceImpl(BrandRepo brandRepo) {

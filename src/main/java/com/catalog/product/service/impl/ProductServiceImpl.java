@@ -1,6 +1,6 @@
 package com.catalog.product.service.impl;
 
-import com.catalog.product.service.ProductService;
+import com.catalog.product.service.IProductService;
 
 import com.catalog.product.controller.dto.*;
 import com.catalog.product.persistence.BrandEntity;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional // Importante para que los cambios se guarden solos
-public class ProductServiceImpl implements ProductService {
+public class ProductServiceImpl implements IProductService {
     private final ProductRepo repo;
     private final ModelMapper modelMapper;
     private final BrandRepo brandRepo;

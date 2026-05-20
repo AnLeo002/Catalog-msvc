@@ -1,7 +1,7 @@
 package com.catalog.product.service.impl;
 
 import com.catalog.product.controller.dto.ProductSizeIdDTO;
-import com.catalog.product.service.ProductStockService;
+import com.catalog.product.service.IProductStockService;
 import com.catalog.product.controller.dto.ProductStockDTO;
 import com.catalog.product.controller.dto.ProductStockDTOResponse;
 import com.catalog.product.persistence.ProductEntity;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class ProductStockServiceImpl implements ProductStockService {
+public class ProductStockServiceImpl implements IProductStockService {
     private final ProductStockRepo repo;
     private final ProductRepo productRepo;
     private final SizeRepo sizeRepo;
