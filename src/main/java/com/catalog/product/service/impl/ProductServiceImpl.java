@@ -46,8 +46,8 @@ public class ProductServiceImpl implements IProductService {
         if(repo.findByNameIgnoreCase(productDTO.name()).isPresent()){
           throw new ResponseStatusException(HttpStatus.CONFLICT, productDTO.name()+" ya se encuentra en la base de datos");
         }
-        BrandEntity brand = brandRepo.findByBrandIgnoreCase(productDTO.brandDTO().brand())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, productDTO.brandDTO().brand() + "no se encuentra en la base de datos"));
+        BrandEntity brand = brandRepo.findByBrandIgnoreCase(productDTO.brand())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, productDTO.brand() + "no se encuentra en la base de datos"));
 
         Set<ProductStockEntity> productStock = productStockService.createStockWithProduct(productDTO.productStockDTO());
         ProductEntity product = ProductEntity.builder()
@@ -102,8 +102,8 @@ public class ProductServiceImpl implements IProductService {
         ProductEntity product = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
 
-        if (productDTO.brandDTO() != null && !product.getBrand().getBrand().equalsIgnoreCase(productDTO.brandDTO().brand())) {
-            BrandEntity brand = brandRepo.findByBrandIgnoreCase(productDTO.brandDTO().brand())
+        if (productDTO.brand() != null && !product.getBrand().getBrand().equalsIgnoreCase(productDTO.brand())) {
+            BrandEntity brand = brandRepo.findByBrandIgnoreCase(productDTO.brand())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Marca no encontrada"));
             product.setBrand(brand);
         }
