@@ -10,6 +10,6 @@ public record ProductDTO(@NotBlank String name,
                          @NotBlank String color,
                          @NotNull BigDecimal price,
                          @NotBlank String description,
-                         @NotBlank BrandDTO brandDTO,
-                         @NotBlank Set<ProductStockDTO> productStockDTO) {
+                         @NotBlank String brand,
+                         Set<ProductStockDTO> productStockDTO) {
 }
