@@ -71,6 +71,7 @@ public class SizeServiceImpl implements ISizeService {
         if (!repo.existsById(id)) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"La talla no se encuentra en la base de datos");
         try{
             repo.deleteById(id);
+            repo.flush();
         }catch (DataIntegrityViolationException e){
             throw new ResponseStatusException(HttpStatus.CONFLICT,"La talla no puede ser eliminada");
         }
