@@ -1,9 +1,6 @@
 package com.catalog.product.service;
 
-import com.catalog.product.controller.dto.ProductDTOResponse;
-import com.catalog.product.controller.dto.ProductDTO;
-import com.catalog.product.controller.dto.ProductStockSetDTO;
-import com.catalog.product.controller.dto.ProductStockSetDTOResponse;
+import com.catalog.product.controller.dto.*;
 
 import java.util.List;
 import java.util.Set;
@@ -14,7 +11,8 @@ public interface IProductService {
     ProductDTOResponse findProductByName(String name);
     List<ProductDTOResponse> findAll();
     ProductDTOResponse updateProductNoStock(ProductDTO productDTO,Long id);
-    Set<ProductStockSetDTOResponse> updateAllStock(ProductStockSetDTO productStockSetDTO,Long id);
+    Set<ProductStockDTOResponse> updateAllStock(Set<ProductStockUpdateDTO> productStockUpdateDTOS, Long id);
+    ProductImagesDTOResponse updateImages(ProductImagesDTO images, Long id);
     void deleteProductById(Long id);
 
 
