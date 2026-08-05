@@ -1,16 +1,18 @@
 package com.catalog.product.service.impl;
 
+import com.catalog.product.config.SkuProductCreator;
+import com.catalog.product.config.ProductComponentsValidatedResponse;
+import com.catalog.product.config.ValidationEntities;
 import com.catalog.product.service.IProductService;
 
 import com.catalog.product.controller.dto.*;
-import com.catalog.product.persistence.BrandEntity;
 import com.catalog.product.persistence.ProductEntity;
 import com.catalog.product.persistence.ProductStockEntity;
 import com.catalog.product.persistence.primaryKey.ProductSizeId;
-import com.catalog.product.repo.BrandRepo;
 import com.catalog.product.repo.ProductRepo;
 import com.catalog.product.repo.ProductStockRepo;
 import com.catalog.product.repo.SizeRepo;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -22,56 +24,48 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional // Importante para que los cambios se guarden solos
+@Transactional(readOnly = true) // Importante para que los cambios se guarden solos
+@RequiredArgsConstructor
 public class ProductServiceImpl implements IProductService {
     private final ProductRepo repo;
     private final ModelMapper modelMapper;
-    private final BrandRepo brandRepo;
     private final ProductStockServiceImpl productStockService;
     private final SizeRepo sizeRepo;
     private final ProductStockRepo productStockRepo;
-
-    public ProductServiceImpl(ProductRepo repo, ModelMapper modelMapper, BrandRepo brandRepo, ProductStockServiceImpl productStockService, SizeRepo sizeRepo, ProductStockRepo productStockRepo) {
-        this.repo = repo;
-        this.modelMapper = modelMapper;
-        this.brandRepo = brandRepo;
-        this.productStockService = productStockService;
-        this.sizeRepo = sizeRepo;
-        this.productStockRepo = productStockRepo;
-    }
-
+    private final ValidationEntities validationEntities;
+    private final SkuProductCreator skuCreator;
 
     @Override
+    @Transactional
     public ProductDTOResponse createProduct(ProductDTO productDTO) {
-        if(repo.findByNameIgnoreCase(productDTO.name()).isPresent()){
-          throw new ResponseStatusException(HttpStatus.CONFLICT, productDTO.name()+" ya se encuentra en la base de datos");
-        }
-        BrandEntity brand = brandRepo.findByBrandIgnoreCase(productDTO.brand())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, productDTO.brand() + "no se encuentra en la base de datos"));
-
-        Set<ProductStockEntity> productStock = productStockService.createStockWithProduct(productDTO.productStockDTO());
+        ProductComponentsValidatedResponse productComponentsValidated = validationEntities.validateProductComponents(productDTO);
+        String sku = skuCreator.createSku(productComponentsValidated,productDTO.name(),Optional.empty());
         ProductEntity product = ProductEntity.builder()
+                .sku(sku)
                 .name(productDTO.name())
-                .color(productDTO.color())
+                .color(productComponentsValidated.color())
+                .type(productComponentsValidated.type())
+                .gender(productComponentsValidated.gender())
                 .description(productDTO.description())
                 .price(productDTO.price())
-                .brand(brand)
+                .brand(productComponentsValidated.brand())
                 .build();
+        if (productDTO.images() != null && !productDTO.images().isEmpty()){
+            product.setImageUrls(productDTO.images());
+        }
         try{
-            ProductEntity productSave = repo.save(product);
-            if (productStock.isEmpty()){
-                return modelMapper.map(productSave, ProductDTOResponse.class);
+            repo.save(product);
+            if (productDTO.stockDTOS() != null && !productDTO.stockDTOS().isEmpty()) {
+                Set<ProductStockEntity> productStock = productStockService.createStockWithProduct(productDTO.stockDTOS(),product.getId());
+                product.setProductStockEntities(productStock);
             }
-            productSave.setProductStockEntities(productStock);
-
-            productSave = repo.save(productSave);
-            return modelMapper.map(productSave, ProductDTOResponse.class);
-
-        }catch (Exception e){
+            return modelMapper.map(product, ProductDTOResponse.class);
+        }catch (DataIntegrityViolationException e){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al guardar el producto",e);
         }
     }
     @Override
+    @Transactional(readOnly = true)
     public ProductDTOResponse findProductById(Long id) {
         ProductEntity product = repo.findById(id)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "el producto no se encuentra en la base de datos"));
@@ -80,6 +74,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDTOResponse findProductByName(String name) {
         ProductEntity product = repo.findByNameIgnoreCase(name)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "El producto no se encuentra en la base de datos"));
@@ -87,6 +82,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductDTOResponse> findAll() {
         List<ProductEntity> productEntities = repo.findAll();
         if (productEntities.isEmpty()){
@@ -98,50 +94,50 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional
     public ProductDTOResponse updateProductNoStock(ProductDTO productDTO, Long id) {
         ProductEntity product = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
 
-        if (productDTO.brand() != null && !product.getBrand().getBrand().equalsIgnoreCase(productDTO.brand())) {
-            BrandEntity brand = brandRepo.findByBrandIgnoreCase(productDTO.brand())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Marca no encontrada"));
-            product.setBrand(brand);
-        }
-
+        ProductComponentsValidatedResponse components = validationEntities.validateProductComponents(productDTO);
+        String sku = skuCreator.createSku(components,productDTO.name(),Optional.of(id));
         // 3. Actualización selectiva (Evita sobreescribir con nulos)
-        if (productDTO.name() != null && !product.getName().equalsIgnoreCase(productDTO.name())) product.setName(productDTO.name());
-        if (productDTO.color() != null && !product.getColor().equalsIgnoreCase(productDTO.color())) product.setColor(productDTO.color());
-        if (productDTO.description() != null && !product.getDescription().equalsIgnoreCase(productDTO.description())) product.setDescription(productDTO.description());
+        product.setSku(sku);
+        if (!product.getName().equalsIgnoreCase(productDTO.name())) product.setName(productDTO.name());
+        if (!product.getDescription().equalsIgnoreCase(productDTO.description())) product.setDescription(productDTO.description());
         if (product.getPrice().compareTo(productDTO.price()) != 0) product.setPrice(productDTO.price());
+
+        if (!product.getBrand().getId().equals(components.brand().getId())) product.setBrand(components.brand());
+        if (!product.getColor().getId().equals(components.color().getId())) product.setColor(components.color());
+        if (!product.getType().getId().equals(components.type().getId())) product.setType(components.type());
+        if (!product.getGender().getId().equals(components.gender().getId())) product.setGender(components.gender());
 
         // No hace falta repo.save(product) si usas @Transactional,
         return modelMapper.map(product, ProductDTOResponse.class);
     }
 
     @Override
-    public Set<ProductStockSetDTOResponse> updateAllStock(ProductStockSetDTO productStockSetDTO, Long id) {
+    @Transactional
+    public Set<ProductStockDTOResponse> updateAllStock(Set<ProductStockUpdateDTO> productStockUpdateDTOS, Long id) {
+
+        if (productStockUpdateDTOS.isEmpty())throw new ResponseStatusException(HttpStatus.NO_CONTENT,"El listado para actualización se encuentra vacío");
         Set<ProductStockEntity> productStock = repo.findProductStock(id);
 
-        if (productStock.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT,"El producto no contiene stock");
-        }
         Set<ProductStockEntity> toUpdate = new HashSet<>();
         Set<ProductStockEntity> toCreate = new HashSet<>();
 
         Map<Long, ProductStockEntity> currentMap = productStock.stream()
                 .collect(Collectors.toMap(e -> e.getId().getSizeId(), e -> e));
         // 2. Recorremos lo que llega del DTO
-        for (ProductStockDTO incoming : productStockSetDTO.productStockDTOS()) {
+        for (ProductStockUpdateDTO incoming : productStockUpdateDTOS) {
             ProductStockEntity existing = currentMap.get(incoming.sizeId());
 
             if (existing != null) {
-                // EXISTE: Solo si el stock cambió, lo agregamos a la lista de updates
                 if (!existing.getStock().equals(incoming.stock())) {
-                    existing.setStock(incoming.stock()+existing.getStock());
+                    existing.setStock(incoming.stock());
                     toUpdate.add(existing);
                 }
             } else {
-                // NO EXISTE: Lo preparamos para crear
                 ProductStockEntity newEntity = ProductStockEntity.builder()
                         .id(new ProductSizeId(id, incoming.sizeId()))
                         .stock(incoming.stock())
@@ -151,25 +147,36 @@ public class ProductServiceImpl implements IProductService {
                 toCreate.add(newEntity);
             }
         }
-        // 3. Persistimos los cambios
-        productStockRepo.saveAll(toUpdate);
-        productStockRepo.saveAll(toCreate);
-        // 5. CONVERTIR A SET manteniendo el orden para el DTO
-        // El LinkedHashSet respeta el orden en que metes los elementos (el orden del sortedResult)
-        Set<ProductStockEntity> finalOrderedSet = toUpdate;
+        if (!toUpdate.isEmpty())productStockRepo.saveAll(toUpdate);
+        if (!toCreate.isEmpty())productStockRepo.saveAll(toCreate);
+
+        Set<ProductStockEntity> finalOrderedSet = new HashSet<>(toUpdate);
         finalOrderedSet.addAll(toCreate);
-        // 6. MAPEAR A RESPUESTA
         return finalOrderedSet.stream()
-                .map(entity -> new ProductStockSetDTOResponse(Collections.singleton(new ProductStockDTOResponse(entity.getId(), entity.getProduct().getId(), entity.getSize().getId(), entity.getStock()))))
+                .map(entity -> new ProductStockDTOResponse(entity.getId(),entity.getStock()))
                 .collect(Collectors.toSet());
     }
     @Override
+    @Transactional
+    public ProductImagesDTOResponse updateImages(ProductImagesDTO images, Long id) {
+        ProductEntity product = repo.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"El producto no se encuentra en la base de datos"));
+        product.getImageUrls().clear();
+        if (images.images() != null && !images.images().isEmpty()) {
+            product.getImageUrls().addAll(images.images());
+        }
+        return new ProductImagesDTOResponse(product.getImageUrls());
+    }
+
+    @Override
+    @Transactional
     public void deleteProductById(Long id) {
         if (!repo.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"El producto no se encuentra en la base de datos para ser eliminado");
         }
         try{
             repo.deleteById(id);
+            repo.flush();
         }catch (DataIntegrityViolationException e){
             throw new ResponseStatusException(HttpStatus.CONFLICT,"No se puede eliminar el producto porque tiene registros relacionados");
         }
