@@ -25,20 +25,22 @@ public class ModelMapperConfig {
                 productStockDTOResponseList = source.getProductStockEntities().stream()
                         .map(productStockEntity -> new ProductStockDTOResponse(
                                 productStockEntity.getId(),
-                                productStockEntity.getProduct().getId(),
-                                productStockEntity.getSize().getId(),
                                 productStockEntity.getStock()
                         ))
                         .collect(Collectors.toSet());
             }
             return new ProductDTOResponse(
                     source.getId(),
+                    source.getSku(),
                     source.getName(),
-                    source.getColor(),
+                    source.getColor().getColor(),
+                    source.getType().getType(),
+                    source.getGender().getGender(),
                     source.getPrice(),
                     source.getDescription(),
                     source.getBrand().getBrand() != null ? source.getBrand().getBrand() : "N/A",
-                    productStockDTOResponseList
+                    productStockDTOResponseList,
+                    source.getImageUrls()
             );
         };
         TypeMap<ProductEntity, ProductDTOResponse> typeMap = modelMapper.createTypeMap(ProductEntity.class, ProductDTOResponse.class);
