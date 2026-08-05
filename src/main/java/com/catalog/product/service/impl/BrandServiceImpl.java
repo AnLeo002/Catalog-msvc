@@ -69,6 +69,7 @@ public class BrandServiceImpl implements IBrandService {
     }
 
     @Override
+    @Transactional
     public void deleteBrandById(Long id) {
         if (!repo.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NO_CONTENT,"La marca no se encuentra en la base de datos");
