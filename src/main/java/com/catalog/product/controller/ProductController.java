@@ -40,7 +40,7 @@ public class ProductController {
     }
     @PutMapping("/update/images/{id}")
     public ResponseEntity<ProductImagesDTOResponse> updateImages(@PathVariable Long id, @RequestBody ProductImagesDTO dto){
-        return ResponseEntity.ok(service.updateImages(dto,id));
+        return ResponseEntity.ok(service. updateImages(dto,id));
     }
     @PutMapping("/update/stock/{id}")
     public ResponseEntity<Set<ProductStockDTOResponse>> updateProductAllStock(@Valid @RequestBody Set<ProductStockUpdateDTO> productStockUpdateDTOS, @PathVariable Long id){
