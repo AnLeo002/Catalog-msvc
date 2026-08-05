@@ -1,5 +1,6 @@
 package com.catalog.product.service;
 
+import com.catalog.product.controller.dto.ProductCreateStockDTO;
 import com.catalog.product.controller.dto.ProductSizeIdDTO;
 import com.catalog.product.controller.dto.ProductStockDTO;
 import com.catalog.product.controller.dto.ProductStockDTOResponse;
@@ -10,11 +11,11 @@ import java.util.Set;
 public interface IProductStockService {
     ProductStockDTOResponse findById (ProductSizeIdDTO productSizeIdDTO);
     Set<ProductStockDTOResponse> findAll ();
-    Set<ProductStockEntity> createStockWithProduct (Set<ProductStockDTO> productStockDTO);
+    Set<ProductStockEntity> createStockWithProduct (Set<ProductCreateStockDTO> productStockDTO,Long id);
     ProductStockDTOResponse createStock (ProductStockDTO productStockDTO);
     ProductStockDTOResponse updateStock (ProductStockDTO productStockDTO);
     Set<ProductStockDTOResponse> updateStockList(Set<ProductStockDTO> productStockDTOS);
-    void deleteStock (ProductStockDTO productStockDTO);
+    void deleteStock (ProductSizeIdDTO productSizeIdDTO);
 
 
 }
