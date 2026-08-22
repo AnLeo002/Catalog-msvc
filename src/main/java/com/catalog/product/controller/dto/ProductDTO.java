@@ -15,5 +15,6 @@ public record ProductDTO(@NotBlank String name,
                          @NotBlank String type,
                          @NotBlank String gender,
                          Set<ProductCreateStockDTO> stockDTOS,
+                         @NotBlank String category,
                          List<String> images) {
 }

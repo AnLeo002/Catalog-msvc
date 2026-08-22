@@ -17,6 +17,7 @@ public record ProductDTOResponse(@NotNull Long id,
                                  @NotBlank String description,
                                  @NotBlank String brand,
                                  Set<ProductStockDTOResponse> productStock,
+                                 @NotBlank String category,
                                  List<String> images
                                  ) {
 }

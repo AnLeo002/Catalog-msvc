@@ -1,5 +1,6 @@
 package com.catalog.product.persistence;
 
+import com.catalog.category.persistence.CategoryEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
@@ -36,6 +37,8 @@ public class ProductEntity {
     private GenderEntity gender;
     @ManyToOne(targetEntity = ColorEntity.class, fetch = FetchType.LAZY)
     private ColorEntity color;
+    @ManyToOne(targetEntity = CategoryEntity.class, fetch = FetchType.LAZY)
+    private CategoryEntity category;
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "image_url")
