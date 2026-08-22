@@ -1,6 +1,7 @@
 package com.catalog.category.persistence;
 
 import com.catalog.product.persistence.ProductEntity;
+import com.catalog.service.persistence.ServiceEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,9 +18,9 @@ public class CategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-
-    @ManyToMany(targetEntity = ProductEntity.class, fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "category_product", joinColumns = @JoinColumn(name = "category"), inverseJoinColumns = @JoinColumn(name = "product"))
+    private String category;
+    @OneToMany(targetEntity = ProductEntity.class,fetch = FetchType.LAZY,mappedBy = "category")
     private List<ProductEntity> productEntities;
+    @OneToMany(targetEntity = ServiceEntity.class,fetch = FetchType.LAZY,mappedBy = "category")
+    private List<ServiceEntity> serviceEntities;
 }

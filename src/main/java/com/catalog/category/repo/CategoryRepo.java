@@ -9,7 +9,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CategoryRepo extends JpaRepository<CategoryEntity, Long> {
+public interface CategoryRepo extends JpaRepository<CategoryEntity,Long> {
     @Query("SELECT c FROM CategoryEntity c WHERE LOWER(c.category) = LOWER(:category)")
     Optional<CategoryEntity> findByCategoryIgnoreCase(@Param("category") String category);
+    boolean existsByCategoryIgnoreCaseAndIdNot(String category,Long id);
 }
