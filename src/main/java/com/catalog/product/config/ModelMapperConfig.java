@@ -40,6 +40,7 @@ public class ModelMapperConfig {
                     source.getDescription(),
                     source.getBrand().getBrand() != null ? source.getBrand().getBrand() : "N/A",
                     productStockDTOResponseList,
+                    source.getCategory().getCategory(),
                     source.getImageUrls()
             );
         };
