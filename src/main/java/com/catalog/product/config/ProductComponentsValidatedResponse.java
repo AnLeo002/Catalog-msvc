@@ -1,5 +1,6 @@
 package com.catalog.product.config;
 
+import com.catalog.category.persistence.CategoryEntity;
 import com.catalog.product.persistence.BrandEntity;
 import com.catalog.product.persistence.ColorEntity;
 import com.catalog.product.persistence.GenderEntity;
@@ -10,6 +11,7 @@ public record ProductComponentsValidatedResponse(
         @NotBlank ColorEntity color,
         @NotBlank TypeEntity type,
         @NotBlank GenderEntity gender,
-        @NotBlank BrandEntity brand
+        @NotBlank BrandEntity brand,
+        @NotBlank CategoryEntity category
         ) {
 }
