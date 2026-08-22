@@ -49,6 +49,7 @@ public class ProductServiceImpl implements IProductService {
                 .description(productDTO.description())
                 .price(productDTO.price())
                 .brand(productComponentsValidated.brand())
+                .category(productComponentsValidated.category())
                 .build();
         if (productDTO.images() != null && !productDTO.images().isEmpty()){
             product.setImageUrls(productDTO.images());
@@ -111,7 +112,7 @@ public class ProductServiceImpl implements IProductService {
         if (!product.getColor().getId().equals(components.color().getId())) product.setColor(components.color());
         if (!product.getType().getId().equals(components.type().getId())) product.setType(components.type());
         if (!product.getGender().getId().equals(components.gender().getId())) product.setGender(components.gender());
-
+        if (!product.getCategory().getId().equals(components.category().getId())) product.setCategory(components.category());
         // No hace falta repo.save(product) si usas @Transactional,
         return modelMapper.map(product, ProductDTOResponse.class);
     }

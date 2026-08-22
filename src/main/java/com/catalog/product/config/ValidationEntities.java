@@ -1,5 +1,7 @@
 package com.catalog.product.config;
 
+import com.catalog.category.persistence.CategoryEntity;
+import com.catalog.category.repo.CategoryRepo;
 import com.catalog.product.controller.dto.ProductDTO;
 import com.catalog.product.persistence.BrandEntity;
 import com.catalog.product.persistence.ColorEntity;
@@ -24,6 +26,7 @@ public class ValidationEntities {
     private final GenderRepo genderRepo;
     private final BrandRepo brandRepo;
     private final ProductRepo productRepo;
+    private final CategoryRepo categoryRepo;
 
     public ProductComponentsValidatedResponse validateProductComponents (ProductDTO productDTO){
         BrandEntity brand =  brandRepo.findByBrandIgnoreCase(productDTO.brand())
@@ -34,8 +37,9 @@ public class ValidationEntities {
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"El tipo no se encuentra en la base de datos"));
         GenderEntity gender = genderRepo.findByGenderIgnoreCase(productDTO.gender())
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"El genero no se encuentra en la base de datos"));
-
-        return new ProductComponentsValidatedResponse(color,type,gender,brand);
+        CategoryEntity category = categoryRepo.findByCategoryIgnoreCase(productDTO.category())
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"La categoría no se encuentra en la base de datos"));
+        return new ProductComponentsValidatedResponse(color,type,gender,brand,category);
     }
     public boolean validateProductAlreadyExists(ProductComponentsValidatedResponse components, String name, Optional<Long> id){
        return productRepo.existsByUniqueAttributes(
@@ -44,7 +48,7 @@ public class ValidationEntities {
                 components.type().getId(),
                 components.gender().getId(),
                 components.color().getId(),
-               id.orElse(null)
+                id.orElse(null)
         );
     }
 }
