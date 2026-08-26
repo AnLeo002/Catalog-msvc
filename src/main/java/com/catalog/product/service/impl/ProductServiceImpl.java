@@ -1,8 +1,8 @@
 package com.catalog.product.service.impl;
 
-import com.catalog.product.config.SkuProductCreator;
-import com.catalog.product.config.ProductComponentsValidatedResponse;
-import com.catalog.product.config.ValidationEntities;
+import com.catalog.config.product.SkuProductCreator;
+import com.catalog.config.product.ProductComponentsValidatedResponse;
+import com.catalog.config.product.ProductValidationEntities;
 import com.catalog.product.service.IProductService;
 
 import com.catalog.product.controller.dto.*;
@@ -32,13 +32,13 @@ public class ProductServiceImpl implements IProductService {
     private final ProductStockServiceImpl productStockService;
     private final SizeRepo sizeRepo;
     private final ProductStockRepo productStockRepo;
-    private final ValidationEntities validationEntities;
+    private final ProductValidationEntities productValidationEntities;
     private final SkuProductCreator skuCreator;
 
     @Override
     @Transactional
     public ProductDTOResponse createProduct(ProductDTO productDTO) {
-        ProductComponentsValidatedResponse productComponentsValidated = validationEntities.validateProductComponents(productDTO);
+        ProductComponentsValidatedResponse productComponentsValidated = productValidationEntities.validateProductComponents(productDTO);
         String sku = skuCreator.createSku(productComponentsValidated,productDTO.name(),Optional.empty());
         ProductEntity product = ProductEntity.builder()
                 .sku(sku)
@@ -49,7 +49,7 @@ public class ProductServiceImpl implements IProductService {
                 .description(productDTO.description())
                 .price(productDTO.price())
                 .brand(productComponentsValidated.brand())
-                .category(productComponentsValidated.category())
+                .categories(productComponentsValidated.categories())
                 .build();
         if (productDTO.images() != null && !productDTO.images().isEmpty()){
             product.setImageUrls(productDTO.images());
@@ -100,7 +100,7 @@ public class ProductServiceImpl implements IProductService {
         ProductEntity product = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
 
-        ProductComponentsValidatedResponse components = validationEntities.validateProductComponents(productDTO);
+        ProductComponentsValidatedResponse components = productValidationEntities.validateProductComponents(productDTO);
         String sku = skuCreator.createSku(components,productDTO.name(),Optional.of(id));
         // 3. Actualización selectiva (Evita sobreescribir con nulos)
         product.setSku(sku);
@@ -112,7 +112,8 @@ public class ProductServiceImpl implements IProductService {
         if (!product.getColor().getId().equals(components.color().getId())) product.setColor(components.color());
         if (!product.getType().getId().equals(components.type().getId())) product.setType(components.type());
         if (!product.getGender().getId().equals(components.gender().getId())) product.setGender(components.gender());
-        if (!product.getCategory().getId().equals(components.category().getId())) product.setCategory(components.category());
+        product.getCategories().clear();
+        product.setCategories(components.categories());
         // No hace falta repo.save(product) si usas @Transactional,
         return modelMapper.map(product, ProductDTOResponse.class);
     }
@@ -121,7 +122,7 @@ public class ProductServiceImpl implements IProductService {
     @Transactional
     public Set<ProductStockDTOResponse> updateAllStock(Set<ProductStockUpdateDTO> productStockUpdateDTOS, Long id) {
 
-        if (productStockUpdateDTOS.isEmpty())throw new ResponseStatusException(HttpStatus.NO_CONTENT,"El listado para actualización se encuentra vacío");
+        if (productStockUpdateDTOS.isEmpty())throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El listado para actualización se encuentra vacío");
         Set<ProductStockEntity> productStock = repo.findProductStock(id);
 
         Set<ProductStockEntity> toUpdate = new HashSet<>();
@@ -131,6 +132,7 @@ public class ProductServiceImpl implements IProductService {
                 .collect(Collectors.toMap(e -> e.getId().getSizeId(), e -> e));
         // 2. Recorremos lo que llega del DTO
         for (ProductStockUpdateDTO incoming : productStockUpdateDTOS) {
+            if (incoming.stock() < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El stock no puede ser negativo para la talla: " + incoming.sizeId());
             ProductStockEntity existing = currentMap.get(incoming.sizeId());
 
             if (existing != null) {
@@ -172,10 +174,10 @@ public class ProductServiceImpl implements IProductService {
     @Override
     @Transactional
     public void deleteProductById(Long id) {
-        if (!repo.existsById(id)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"El producto no se encuentra en la base de datos para ser eliminado");
-        }
+        ProductEntity product = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado en base de datos"));
         try{
+            product.getCategories().clear();
             repo.deleteById(id);
             repo.flush();
         }catch (DataIntegrityViolationException e){
