@@ -1,4 +1,4 @@
-package com.catalog.product.config;
+package com.catalog.config.product;
 
 import com.catalog.category.persistence.CategoryEntity;
 import com.catalog.product.persistence.BrandEntity;

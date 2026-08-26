@@ -1,4 +1,4 @@
-package com.catalog.product.config;
+package com.catalog.config.product;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,9 +9,9 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class SkuProductCreator {
-    private final ValidationEntities validationEntities;
+    private final ProductValidationEntities productValidationEntities;
     public String createSku(ProductComponentsValidatedResponse components, String name, Optional<Long> id){
-        if (validationEntities.validateProductAlreadyExists(components,name,id))
+        if (productValidationEntities.validateProductAlreadyExists(components,name,id))
             throw new ResponseStatusException(HttpStatus.CONFLICT,"Ya existe un producto registrado con este nombre, marca, tipo, género y color.");
         String n = validateLengthSku(name);
         String b = validateLengthSku(components.brand().getBrand());
