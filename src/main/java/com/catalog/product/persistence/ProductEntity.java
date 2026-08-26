@@ -29,7 +29,8 @@ public class ProductEntity {
     private String description;
     @ManyToOne(targetEntity = BrandEntity.class, fetch = FetchType.LAZY)
     private BrandEntity brand;
-    @OneToMany(targetEntity = ProductStockEntity.class, fetch = FetchType.LAZY, mappedBy = "product")
+
+    @OneToMany(targetEntity = ProductStockEntity.class, fetch = FetchType.LAZY, mappedBy = "product",cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductStockEntity> productStockEntities;
     @ManyToOne(targetEntity = TypeEntity.class, fetch = FetchType.LAZY)
     private TypeEntity type;
@@ -37,8 +38,9 @@ public class ProductEntity {
     private GenderEntity gender;
     @ManyToOne(targetEntity = ColorEntity.class, fetch = FetchType.LAZY)
     private ColorEntity color;
-    @ManyToOne(targetEntity = CategoryEntity.class, fetch = FetchType.LAZY)
-    private CategoryEntity category;
+    @ManyToMany(targetEntity = CategoryEntity.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "product_id"),inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private List<CategoryEntity> categories;
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "image_url")

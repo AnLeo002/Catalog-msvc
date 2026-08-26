@@ -1,5 +1,6 @@
 package com.catalog.product.controller.dto;
 
+import com.catalog.category.controller.dtos.CategoryDTOResponse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -16,8 +17,8 @@ public record ProductDTOResponse(@NotNull Long id,
                                  @NotNull BigDecimal price,
                                  @NotBlank String description,
                                  @NotBlank String brand,
-                                 Set<ProductStockDTOResponse> productStock,
-                                 @NotBlank String category,
+                                 Set<StockDTOResponse> stock,
+                                 @NotBlank List<CategoryDTOResponse> categories,
                                  List<String> images
                                  ) {
 }

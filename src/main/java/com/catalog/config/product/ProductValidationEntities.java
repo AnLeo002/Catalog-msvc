@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -37,9 +38,9 @@ public class ProductValidationEntities {
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"El tipo no se encuentra en la base de datos"));
         GenderEntity gender = genderRepo.findByGenderIgnoreCase(productDTO.gender())
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"El genero no se encuentra en la base de datos"));
-        CategoryEntity category = categoryRepo.findByCategoryIgnoreCase(productDTO.category())
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"La categoría no se encuentra en la base de datos"));
-        return new ProductComponentsValidatedResponse(color,type,gender,brand,category);
+        List<CategoryEntity> categories = categoryRepo.findAllById(productDTO.categories());
+        if (categories.size()!= productDTO.categories().size()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Uno o más contenidos no existen en la base de datos");
+        return new ProductComponentsValidatedResponse(color,type,gender,brand,categories);
     }
     public boolean validateProductAlreadyExists(ProductComponentsValidatedResponse components, String name, Optional<Long> id){
        return productRepo.existsByUniqueAttributes(

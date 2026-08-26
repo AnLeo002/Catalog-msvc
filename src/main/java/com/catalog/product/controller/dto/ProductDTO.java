@@ -1,6 +1,7 @@
 package com.catalog.product.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
@@ -15,6 +16,6 @@ public record ProductDTO(@NotBlank String name,
                          @NotBlank String type,
                          @NotBlank String gender,
                          Set<ProductCreateStockDTO> stockDTOS,
-                         @NotBlank String category,
+                         @NotEmpty List<Long> categories,
                          List<String> images) {
 }
