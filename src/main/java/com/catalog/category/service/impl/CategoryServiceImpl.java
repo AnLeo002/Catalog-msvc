@@ -5,6 +5,7 @@ import com.catalog.category.controller.dtos.CategoryDTO;
 import com.catalog.category.controller.dtos.CategoryDTOResponse;
 import com.catalog.category.persistence.CategoryEntity;
 import com.catalog.category.repo.CategoryRepo;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,9 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepo repo;
-
-    public CategoryServiceImpl(CategoryRepo repo) {
-        this.repo = repo;
-    }
 
     @Override
     public CategoryDTOResponse findByCategory(String category) {
@@ -41,7 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Set<CategoryDTOResponse> findAll() {
         List<CategoryEntity> categoryEntities = repo.findAll();
-        if (categoryEntities.isEmpty()) throw new ResponseStatusException(HttpStatus.NO_CONTENT,"La base de datos se encuentra vacia");
+        if (categoryEntities.isEmpty()) throw new ResponseStatusException(HttpStatus.NO_CONTENT,"La base de datos se encuentra vacía");
         return categoryEntities.stream()
                 .map(c-> new CategoryDTOResponse(c.getId(),c.getCategory()))
                 .collect(Collectors.toSet());
@@ -62,18 +60,17 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryDTOResponse updateCategory(CategoryDTO categoryDTO, Long id) {
         CategoryEntity categoryEntity = repo.findById(id)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"La categoría no se encuentra en la base de datos"));
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"La categoría no existe en la base de datos"));
         if (repo.existsByCategoryIgnoreCaseAndIdNot(categoryDTO.category(),id))
             throw new ResponseStatusException(HttpStatus.CONFLICT,"La categoría ya existe");
         categoryEntity.setCategory(categoryDTO.category());
-        repo.save(categoryEntity);
         return new CategoryDTOResponse(categoryEntity.getId(),categoryEntity.getCategory());
     }
 
     @Override
     @Transactional
     public void deleteCategoryById(Long id) {
-        if (!repo.findById(id).isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"La categoría no puede ser eliminada por que no existe");
+        if (repo.findById(id).isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"La categoría no puede ser eliminada por que no existe");
         try{
             repo.deleteById(id);
             repo.flush();
