@@ -1,4 +1,4 @@
-package com.catalog.product.config;
+package com.catalog.config.product;
 
 import com.catalog.category.persistence.CategoryEntity;
 import com.catalog.category.repo.CategoryRepo;
@@ -19,7 +19,7 @@ import java.util.Optional;
 @Component
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class ValidationEntities {
+public class ProductValidationEntities {
 
     private final ColorRepo colorRepo;
     private final TypeRepo typeRepo;
